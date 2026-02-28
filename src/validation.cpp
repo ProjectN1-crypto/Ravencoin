@@ -2519,20 +2519,24 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         const CTransaction &tx = *(block.vtx[i]);
         const uint256 txhash = tx.GetHash();
 
-        nInputs += tx.vin.size();
+       // --- 50/50 burn ---
+CAmount minerShare = txfee / 2;
+CAmount burnShare  = txfee - minerShare; // pour gérer les satoshis impairs
 
-        if (!tx.IsCoinBase())
-        {
-            CAmount txfee = 0;
-            if (!Consensus::CheckTxInputs(tx, state, view, pindex->nHeight, txfee)) {
-                state.SetFailedTransaction(tx.GetHash());
-                return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
-            }
-            nFees += txfee;
-            if (!MoneyRange(nFees)) {
-                return state.DoS(100, error("%s: accumulated fee in the block out of range.", __func__),
-                                 REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
-            }
+// Ajouter la moitié au total des fees pour le coinbase
+nFees += minerShare;
+
+// Créer un output OP_RETURN pour brûler l’autre moitié
+CTxOut burnOut;
+burnOut.nValue = burnShare;
+burnOut.scriptPubKey = CScript() << OP_RETURN;
+
+// Ajouter à la transaction coinbase
+block.vtx[0]->vout.push_back(burnOut);
+
+// Optionnel : compteur total brûlé
+consensus.totalBurned += burnShare;
+// ------------------
 
             /** RVN START */
             if (!AreAssetsDeployed()) {
