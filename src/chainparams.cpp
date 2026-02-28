@@ -125,7 +125,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.kawpowLimit = uint256S("0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // Estimated starting diff for first 180 kawpow blocks
-        consensus.nPowTargetTimespan = 2016 * 60; // 1.4 days
+        consensus.nPowTargetTimespan = 2016 * 30; // 1.4 days
         consensus.nPowTargetSpacing = 30;
 		consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -290,7 +290,7 @@ public:
 
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.kawpowLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 2016 * 60; // 1.4 days
+        consensus.nPowTargetTimespan = 2016 * 30; // 1.4 days
         consensus.nPowTargetSpacing = 30;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
@@ -510,7 +510,7 @@ public:
         consensus.nSubsidyHalvingInterval = 150;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.kawpowLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 2016 * 60; // 1.4 days
+        consensus.nPowTargetTimespan = 2016 * 30; // 1.4 days
         consensus.nPowTargetSpacing = 30;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
