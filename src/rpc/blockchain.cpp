@@ -1936,3 +1936,24 @@ void RegisterBlockchainRPCCommands(CRPCTable &t)
     for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++)
         t.appendCommand(commands[vcidx].name, &commands[vcidx]);
 }
+static UniValue cachedStats;
+static int lastHeight = -1;
+
+UniValue getnetworkstats(const JSONRPCRequest& request)
+{
+    int currentHeight = chainActive.Height();
+
+    if (currentHeight == lastHeight) {
+        return cachedStats;
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("blocks", currentHeight);
+    result.pushKV("difficulty", GetDifficulty());
+    result.pushKV("mempool_size", mempool.size());
+
+    cachedStats = result;
+    lastHeight = currentHeight;
+
+    return result;
+}
