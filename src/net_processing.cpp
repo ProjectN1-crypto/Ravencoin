@@ -3541,7 +3541,15 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
             if (pto->nNextInvSend < nNow) {
                 fSendTrickle = true;
                 // Use half the delay for outbound peers, as there is less privacy concern for them.
-                pto->nNextInvSend = PoissonNextSend(nNow, INVENTORY_BROADCAST_INTERVAL >> !pto->fInbound);
+                if (pto->nNextInvSend < nNow) {
+    fSendTrickle = true;
+    if (inv.type == MSG_BLOCK) {
+        pto->nNextInvSend = nNow; // immédiat pour les blocs
+    } else {
+        pto->nNextInvSend = PoissonNextSend(nNow,
+            (INVENTORY_BROADCAST_INTERVAL / 2) >> !pto->fInbound); // tx normale
+    }
+}
             }
 
             // Time to send but the peer has requested we not relay transactions.
