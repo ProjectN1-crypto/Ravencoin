@@ -154,29 +154,41 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
 }
 
-unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
+unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast,
+                                       int64_t nFirstBlockTime,
+                                       const Consensus::Params& params)
 {
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
-    // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-    if (nActualTimespan < params.nPowTargetTimespan/4)
-        nActualTimespan = params.nPowTargetTimespan/4;
-    if (nActualTimespan > params.nPowTargetTimespan*4)
-        nActualTimespan = params.nPowTargetTimespan*4;
+    int64_t nTargetTimespan = params.nPowTargetTimespan;
 
-    // Retarget
+    // Clamp plus strict : ±100%
+    if (nActualTimespan < nTargetTimespan / 2)
+        nActualTimespan = nTargetTimespan / 2;
+
+    if (nActualTimespan > nTargetTimespan * 2)
+        nActualTimespan = nTargetTimespan * 2;
+
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
-    bnNew *= nActualTimespan;
-    bnNew /= params.nPowTargetTimespan;
+
+    // Dampening factor (stabilise variation)
+    // Nouvelle formule : 75% ancien + 25% ajustement
+    arith_uint256 bnAdjusted = bnNew;
+    bnAdjusted *= nActualTimespan;
+    bnAdjusted /= nTargetTimespan;
+
+    bnNew = (bnNew * 3 + bnAdjusted) / 4;
 
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
 
     return bnNew.GetCompact();
+}
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
